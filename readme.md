@@ -1,9 +1,9 @@
 ## Folder Structure
-
-### Bronze
+###data
+#### Bronze
 Description: Contains raw, unprocessed data.
 
-### Silver
+#### Silver
 Description: Contains cleaned and transformed data.
 
 
@@ -12,10 +12,16 @@ Description: Contains cleaned and transformed data.
 
 ### Installing UV
 ```bash
-pip install uv
-uv venv .venv --python python3.12
-./venv/Scripts/activate since i am on windows. Run source ./venv/Scripts/activate  
-uv add scikit-learn
-uv add pandas, numpy 
-uv add ipykernel 
+1. pip install uv
+2. uv venv .venv --python python3.12
+3. ./venv/Scripts/activate since i am on windows. Run source ./venv/Scripts/activate  
+4. uv init
+5. uv add scikit-learn
+6. uv add pandas, numpy 
+7. uv add ipykernel 
 ```
+
+
+
+### Some notes
+1. Initially not clearing notebook upon commit but remembered there is a command run during the lectures to clear the outputs for the notebook.
