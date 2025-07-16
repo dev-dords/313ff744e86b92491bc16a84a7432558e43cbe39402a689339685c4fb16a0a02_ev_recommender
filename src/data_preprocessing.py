@@ -1,21 +1,23 @@
 import os
+import re
 import pandas as pd
 import numpy as np
 
+from sklearn.preprocessing import MinMaxScaler
 
 src_dir = os.getcwd()
-data_dir = os.path.join(src_dir, 'data')  
-bronze_dir = os.path.join(data_dir, 'bronze')  
-silver_dir = os.path.join(data_dir, 'silver')  
-data_file = os.path.join(bronze_dir, 'electric_vehicles_spec_2025.csv.csv')  
+data_dir = os.path.join(src_dir, 'data')
+bronze_dir = os.path.join(data_dir, 'bronze')
+silver_dir = os.path.join(data_dir, 'silver')
+data_file = os.path.join(bronze_dir, 'electric_vehicles_spec_2025.csv.csv')
 
 def load_data(file_path):
     """
     Load data from a CSV file.
-    
+
     Parameters:
     file_path (str): Path to the CSV file.
-    
+
     Returns:
     pandas.DataFrame: Loaded data as a DataFrame.
     """
@@ -29,10 +31,10 @@ def load_data(file_path):
 def check_missing_values(df):
     """
     Check for missing values in the DataFrame.
-    
+
     Parameters:
     df (pandas.DataFrame): DataFrame to check.
-    
+
     Returns:
     pandas.Series: Series with counts of missing values per column.
     """
@@ -40,20 +42,26 @@ def check_missing_values(df):
     print("Missing values in each column:")
     print(missing_values[missing_values > 0])
 
-def fix_missing_values(df):
+def fill_na_discrepancy(df):
     """
     Fix missing values in the DataFrame.
-    
+
     Parameters:
     df (pandas.DataFrame): DataFrame to fix.
-    
+
     Returns:
     pandas.DataFrame: DataFrame with missing values fixed.
     """
+
+    def replace_banana(match):
+        number = int(match.group(1))
+        return str(number * 50)
+
     electric_vehicles = df.copy()
     electric_vehicles = electric_vehicles.dropna(subset=['model'])
-    electric_vehicles = electric_vehicles.drop(columns=['number_of_cells'])
+    electric_vehicles = electric_vehicles.drop(columns=['number_of_cells', 'source_url', 'battery_type'])
     electric_vehicles.loc[electric_vehicles['fast_charging_power_kw_dc'].isna(), 'fast_charging_power_kw_dc'] = 80
+    electric_vehicles.loc[electric_vehicles['torque_nm'].isna(), 'torque_nm'] = 0
     electric_vehicles.loc[electric_vehicles['fast_charge_port'].isna(), 'fast_charge_port'] = 'CCS'
     brand_means = electric_vehicles.groupby('brand').agg({
         'towing_capacity_kg': 'mean'
@@ -64,12 +72,36 @@ def fix_missing_values(df):
         electric_vehicles['brand'].map(brand_means_dict)
     )
     electric_vehicles.loc[ electric_vehicles['brand']=='Ford', 'cargo_volume_l'] = 571
+    mask = electric_vehicles['cargo_volume_l'].str.contains(r'(?i)Banana Boxes', na=False)
+    electric_vehicles.loc[mask, 'cargo_volume_l'] = electric_vehicles.loc[mask, 'cargo_volume_l'].str.replace(
+        r'(?i)(\d+)\s*Banana Boxes', replace_banana, regex=True
+    )
+
     return electric_vehicles
+
+def scale_data(df):
+    """
+    Scale numerical columns in the DataFrame.
+
+    Parameters:
+    df (pandas.DataFrame): DataFrame to scale.
+
+    Returns:
+    pandas.DataFrame: Scaled DataFrame.
+    """
+    scaler = MinMaxScaler()
+    columns_to_scale = ['top_speed_kmh', 'battery_capacity_kWh', 'torque_nm', 'efficiency_wh_per_km',
+                        'range_km', 'acceleration_0_100_s', 'fast_charging_power_kw_dc', 'towing_capacity_kg',
+                        'cargo_volume_l', 'seats', 'length_mm', 'width_mm', 'height_mm']
+    df[columns_to_scale] = scaler.fit_transform(df[columns_to_scale])
+    print("Data scaled using MinMaxScaler.")
+    return df
+
 
 def save_data(df, file_path):
     """
     Save DataFrame to a CSV file.
-    
+
     Parameters:
     df (pandas.DataFrame): DataFrame to save.
     file_path (str): Path to save the CSV file.
@@ -81,8 +113,9 @@ def main():
     print("Data preprocessing module loaded successfully!")
     electric_vehicles = load_data(data_file)
     check_missing_values(electric_vehicles)
-    electric_vehicles = fix_missing_values(electric_vehicles)
+    electric_vehicles = fill_na_discrepancy(electric_vehicles)
+    electric_vehicles = scale_data(electric_vehicles)
     save_data(electric_vehicles, os.path.join(silver_dir, 'electric_vehicles_preprocessed.csv'))
-    
+
 if __name__ == "__main__":
     main()

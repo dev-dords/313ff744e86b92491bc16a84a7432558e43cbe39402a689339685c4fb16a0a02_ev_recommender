@@ -14,11 +14,11 @@ Description: Contains cleaned and transformed data.
 ```bash
 1. pip install uv
 2. uv venv .venv --python python3.12
-3. ./venv/Scripts/activate since i am on windows. Run source ./venv/Scripts/activate  
+3. ./venv/Scripts/activate since i am on windows. Run source ./venv/Scripts/activate
 4. uv init
 5. uv add scikit-learn
-6. uv add pandas, numpy 
-7. uv add ipykernel 
+6. uv add pandas, numpy
+7. uv add ipykernel
 ```
 
 
