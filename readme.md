@@ -1,12 +1,9 @@
-## Folder Structure
-###data
+## Data Structure
 #### Bronze
 Description: Contains raw, unprocessed data.
 
 #### Silver
 Description: Contains cleaned and transformed data.
-
-
 
 ## Setup Instructions
 
@@ -21,7 +18,6 @@ Description: Contains cleaned and transformed data.
 7. uv add ipykernel
 ```
 
-
-
 ### Some notes
 1. Initially not clearing notebook upon commit but remembered there is a command run during the lectures to clear the outputs for the notebook.
+2. Since I implemented a recommender system, No metrics are used to evaluate the model. The recommender system is evaluated based on user feedback and satisfaction.

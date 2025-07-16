@@ -57,8 +57,6 @@ def main():
   training_data = load_data(os.path.join(silver_dir, 'electric_vehicles_training_data.csv'))
   test_data = load_data(os.path.join(silver_dir, 'electric_vehicles_test_data.csv'))
 
-
-
   train_processed, test_processed = feature_engineering_pipeline(training_data, test_data)
 
   train_processed = pd.concat([train_processed, training_data['model']], axis=1)
