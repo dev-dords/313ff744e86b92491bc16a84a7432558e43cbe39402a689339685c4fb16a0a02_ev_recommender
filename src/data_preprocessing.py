@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import numpy as np
 
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
 
 src_dir = os.getcwd()
 data_dir = os.path.join(src_dir, 'data')
@@ -79,25 +79,6 @@ def fill_na_discrepancy(df):
 
     return electric_vehicles
 
-def scale_data(df):
-    """
-    Scale numerical columns in the DataFrame.
-
-    Parameters:
-    df (pandas.DataFrame): DataFrame to scale.
-
-    Returns:
-    pandas.DataFrame: Scaled DataFrame.
-    """
-    scaler = MinMaxScaler()
-    columns_to_scale = ['top_speed_kmh', 'battery_capacity_kWh', 'torque_nm', 'efficiency_wh_per_km',
-                        'range_km', 'acceleration_0_100_s', 'fast_charging_power_kw_dc', 'towing_capacity_kg',
-                        'cargo_volume_l', 'seats', 'length_mm', 'width_mm', 'height_mm']
-    df[columns_to_scale] = scaler.fit_transform(df[columns_to_scale])
-    print("Data scaled using MinMaxScaler.")
-    return df
-
-
 def save_data(df, file_path):
     """
     Save DataFrame to a CSV file.
@@ -114,8 +95,14 @@ def main():
     electric_vehicles = load_data(data_file)
     check_missing_values(electric_vehicles)
     electric_vehicles = fill_na_discrepancy(electric_vehicles)
-    electric_vehicles = scale_data(electric_vehicles)
-    save_data(electric_vehicles, os.path.join(silver_dir, 'electric_vehicles_preprocessed.csv'))
 
+    X = electric_vehicles.drop('model', axis=1)
+    y = electric_vehicles['model']
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    training_data = pd.concat([X_train, y_train], axis=1)
+    test_data = pd.concat([X_test, y_test], axis=1)
+    save_data(training_data, os.path.join(silver_dir, 'electric_vehicles_training_data.csv'))
+    save_data(test_data, os.path.join(silver_dir, 'electric_vehicles_test_data.csv'))
 if __name__ == "__main__":
     main()

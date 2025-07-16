@@ -1,44 +1,78 @@
 import os
-import re
 import pandas as pd
 import numpy as np
 
-from sklearn.preprocessing import OneHotEncoder
-from data_preprocessing import load_data
+from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
+from data_preprocessing import load_data, save_data
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
 src_dir = os.getcwd()
 data_dir = os.path.join(src_dir, 'data')
 silver_dir = os.path.join(data_dir, 'silver')
 gold_dir = os.path.join(data_dir, 'gold')
 
-def one_hot_encode_data(ev_data):
-    """
-    One-hot encode categorical columns in the DataFrame.
 
-    Parameters:
-    ev_data (pandas.DataFrame): DataFrame containing electric vehicle data.
+def feature_engineering_pipeline(training_data, test_data):
+  columns_to_scale = ['top_speed_kmh', 'battery_capacity_kWh', 'torque_nm', 'efficiency_wh_per_km',
+                      'range_km', 'acceleration_0_100_s', 'fast_charging_power_kw_dc', 'towing_capacity_kg',
+                      'cargo_volume_l', 'seats', 'length_mm', 'width_mm', 'height_mm']
+  categorical_columns = ['brand', 'fast_charge_port', 'segment', 'drivetrain', 'car_body_type']
 
-    Returns:
-    pandas.DataFrame: DataFrame with one-hot encoded categorical columns.
-    """
-    encoder = OneHotEncoder(sparse_output=False)
-    categorical_columns = ['brand', 'fast_charge_port', 'segment', 'drivetrain', 'car_body_type']
+  X_train = training_data.drop('model', axis=1)
+  y_train = training_data['model']
+  X_test = test_data.drop('model', axis=1)
+  y_test = test_data['model']
 
-    ev_encoded = encoder.fit_transform(ev_data[categorical_columns])
-    columns = encoder.get_feature_names_out(categorical_columns)
+  # Define the preprocessors
+  numeric_transformer = MinMaxScaler()
+  categorical_transformer = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
 
-    ev_one_hot_df = pd.DataFrame(ev_encoded, columns=columns)
-    ev_encoded_df = pd.concat([ev_data.drop(columns=categorical_columns), ev_one_hot_df], axis=1)
+  preprocessor = ColumnTransformer(
+      transformers=[
+          ('num', numeric_transformer, columns_to_scale),
+          ('cat', categorical_transformer, categorical_columns)
+      ],
+      remainder='passthrough'
+  )
 
-    return ev_encoded_df
+  train_processed = preprocessor.fit_transform(X_train)
+  test_processed = preprocessor.transform(X_test)
+
+  # Get feature names after transformation
+  cat_feature_names = preprocessor.named_transformers_['cat'].get_feature_names_out(categorical_columns)
+  all_feature_names = (
+      columns_to_scale +
+      list(cat_feature_names) +
+      [col for col in X_train.columns if col not in columns_to_scale + categorical_columns]
+  )
+
+  return pd.DataFrame(train_processed, columns=all_feature_names), \
+        pd.DataFrame(test_processed, columns=all_feature_names)
+
 
 def main():
-  print("Starting one-hot encoding of electric vehicle data...")
-  pre_processed_data = load_data(os.path.join(silver_dir, 'electric_vehicles_preprocessed.csv'))
-  ev_encoded_df = one_hot_encode_data(pre_processed_data)
-  print("One-hot encoding completed.")
-  ev_encoded_df.to_csv(os.path.join(gold_dir, 'electric_vehicles_one_hot_encoded.csv'), index=False)
+  print("Starting feature engineering pipeline...")
+
+  training_data = load_data(os.path.join(silver_dir, 'electric_vehicles_training_data.csv'))
+  test_data = load_data(os.path.join(silver_dir, 'electric_vehicles_test_data.csv'))
+
+
+
+  train_processed, test_processed = feature_engineering_pipeline(training_data, test_data)
+
+  train_processed = pd.concat([train_processed, training_data['model']], axis=1)
+  test_processed = pd.concat([test_processed, test_data['model']], axis=1)
+
+  if 'Unnamed: 0' in train_processed.columns:
+    train_processed = train_processed.drop(columns=['Unnamed: 0'])
+  if 'Unnamed: 0' in test_processed.columns:
+    test_processed = test_processed.drop(columns=['Unnamed: 0'])
+  save_data(train_processed, os.path.join(gold_dir, 'electric_vehicles_train_processed.csv'))
+  save_data(test_processed, os.path.join(gold_dir, 'electric_vehicles_test_processed.csv'))
+
+  print("Feature engineering pipeline completed successfully!")
 
 
 if __name__ == "__main__":
-    main()
+  main()
