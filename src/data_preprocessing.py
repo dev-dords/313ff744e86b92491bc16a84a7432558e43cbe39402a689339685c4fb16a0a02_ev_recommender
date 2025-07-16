@@ -71,7 +71,8 @@ def fill_na_discrepancy(df):
     electric_vehicles['towing_capacity_kg'] = electric_vehicles['towing_capacity_kg'].fillna(
         electric_vehicles['brand'].map(brand_means_dict)
     )
-    electric_vehicles.loc[ electric_vehicles['brand']=='Ford', 'cargo_volume_l'] = 571
+    mask_ford_null = (electric_vehicles['brand'] == 'Ford') & (electric_vehicles['cargo_volume_l'].isnull())
+    electric_vehicles.loc[mask_ford_null, 'cargo_volume_l'] = 571
     mask = electric_vehicles['cargo_volume_l'].str.contains(r'(?i)Banana Boxes', na=False)
     electric_vehicles.loc[mask, 'cargo_volume_l'] = electric_vehicles.loc[mask, 'cargo_volume_l'].str.replace(
         r'(?i)(\d+)\s*Banana Boxes', replace_banana, regex=True
