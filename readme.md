@@ -1,23 +1,58 @@
-## Data Structure
-#### Bronze
-Description: Contains raw, unprocessed data.
+# ⚡ Electric Vehicle Recommender System
 
-#### Silver
-Description: Contains cleaned and transformed data.
+## 📁 Data Structure
 
-## Setup Instructions
+### 🥉 Bronze
+- **Description:** Contains raw, unprocessed data.
 
-### Installing UV
+### 🥈 Silver
+- **Description:** Contains cleaned and transformed data.
+
+### 🥇 Gold
+- **Description:** Contains aggregated and feature-engineered data ready for modeling.
+---
+
+## ⚙️ Setup Instructions
+
+### 🐍 Setting Up the Python Environment using UV
+
 ```bash
-1. pip install uv
-2. uv venv .venv --python python3.12
-3. ./venv/Scripts/activate since i am on windows. Run source ./venv/Scripts/activate
-4. uv init
-5. uv add scikit-learn
-6. uv add pandas, numpy
-7. uv add ipykernel
+# 1. Install uv
+pip install uv
+
+# 2. Create virtual environment using Python 3.12
+uv venv .venv --python python3.12
+
+# 3. Activate the virtual environment (Windows)
+./venv/Scripts/activate
+
+source .venv/bin/activate  # (Linux/Mac)
+
+# 4. Initialize the environment
+uv init
+
+# 5. Add required packages
+uv add scikit-learn
+uv add pandas numpy
+uv add ipykernel
 ```
 
-### Some notes
-1. Initially not clearing notebook upon commit but remembered there is a command run during the lectures to clear the outputs for the notebook.
-2. Since I implemented a recommender system, No metrics are used to evaluate the model. The recommender system is evaluated based on user feedback and satisfaction.
+## Pre-commit Hooks
+To ensure code quality and consistency, we use pre-commit hooks. Follow these steps to set them up:
+### 1. Install pre-commit
+```bash
+uv add pre-commit
+pre-commit install
+pre-commit sample-config
+replace .pre-commit-config.yaml hooks
+  - id: check-yaml
+    description: Check YAML files for syntax errors
+  - id: end-of-file-fixer
+    description: Ensure files end with a newline
+  - id: trailing-whitespace
+    description: Remove trailing whitespace
+  - id: autopep8
+    description: Format Python code using autopep8
+pre-commit autoupdate
+pre-commit run --all-files
+```
