@@ -55,9 +55,7 @@ def feature_engineering_pipeline(training_data, test_data):
         pd.DataFrame(test_processed, columns=all_feature_names)
 
 
-def main():
-    print("Starting feature engineering pipeline...")
-
+def feature_engineer():
     training_data = load_data(os.path.join(
         silver_dir, 'electric_vehicles_training_data.csv'))
     test_data = load_data(os.path.join(
@@ -79,8 +77,8 @@ def main():
     save_data(test_processed, os.path.join(
         gold_dir, 'electric_vehicles_test_processed.csv'))
 
-    print("Feature engineering pipeline completed successfully!")
-
 
 if __name__ == "__main__":
-    main()
+    print("Feature engineering module loaded successfully!")
+    feature_engineer()
+    print("Feature engineering pipeline completed successfully!")

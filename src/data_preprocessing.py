@@ -25,8 +25,6 @@ def load_data(file_path):
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"The file {file_path} does not exist.")
     electric_vehicles = pd.read_csv(file_path)
-    print(f"Loading data from {file_path}...")
-    print(f"Data has shape: {electric_vehicles.shape}")
     return electric_vehicles
 
 
@@ -41,8 +39,9 @@ def check_missing_values(df):
     pandas.Series: Series with counts of missing values per column.
     """
     missing_values = df.isnull().sum()
-    print("Missing values in each column:")
+    print("\t\tMissing values in each column:")
     print(missing_values[missing_values > 0])
+    print("\n")
 
 
 def fill_na_discrepancy(df):
@@ -86,7 +85,7 @@ def fill_na_discrepancy(df):
     electric_vehicles.loc[mask, 'cargo_volume_l'] = electric_vehicles.loc[mask, 'cargo_volume_l'].str.replace(
         r'(?i)(\d+)\s*Banana Boxes', replace_banana, regex=True
     )
-
+    print("\t\tNaN and discrepancies fixed successfully!\n")
     return electric_vehicles
 
 
@@ -99,11 +98,9 @@ def save_data(df, file_path):
     file_path (str): Path to save the CSV file.
     """
     df.to_csv(file_path)
-    print(f"Data saved to {file_path}")
 
 
-def main():
-    print("Data preprocessing module loaded successfully!")
+def preprocess_data():
     electric_vehicles = load_data(data_file)
     check_missing_values(electric_vehicles)
     electric_vehicles = fill_na_discrepancy(electric_vehicles)
@@ -122,4 +119,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    print("Starting data preprocessing...")
+    preprocess_data()
+    print("Data preprocessing completed successfully!")

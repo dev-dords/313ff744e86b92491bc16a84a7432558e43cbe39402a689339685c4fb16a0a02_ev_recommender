@@ -8,7 +8,7 @@ data_dir = os.path.join(src_dir, 'data')
 gold_dir = os.path.join(data_dir, 'gold')
 
 
-def main():
+def evaluate():
     model_path = os.path.join(src_dir, 'models', 'model.pkl')
     knn = joblib.load(model_path)
 
@@ -34,5 +34,6 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    print("Starting evaluation...")
+    evaluate()
     print("\nRecommendation generation completed.")
