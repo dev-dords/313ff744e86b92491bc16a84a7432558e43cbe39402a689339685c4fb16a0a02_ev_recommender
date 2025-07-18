@@ -1,8 +1,8 @@
 import os
 import re
-import pandas as pd
-import numpy as np
 
+import numpy as np
+import pandas as pd
 from sklearn.model_selection import train_test_split
 
 src_dir = os.getcwd()
@@ -10,6 +10,7 @@ data_dir = os.path.join(src_dir, 'data')
 bronze_dir = os.path.join(data_dir, 'bronze')
 silver_dir = os.path.join(data_dir, 'silver')
 data_file = os.path.join(bronze_dir, 'electric_vehicles_spec_2025.csv.csv')
+
 
 def load_data(file_path):
     """
@@ -28,6 +29,7 @@ def load_data(file_path):
     print(f"Data has shape: {electric_vehicles.shape}")
     return electric_vehicles
 
+
 def check_missing_values(df):
     """
     Check for missing values in the DataFrame.
@@ -41,6 +43,7 @@ def check_missing_values(df):
     missing_values = df.isnull().sum()
     print("Missing values in each column:")
     print(missing_values[missing_values > 0])
+
 
 def fill_na_discrepancy(df):
     """
@@ -59,10 +62,14 @@ def fill_na_discrepancy(df):
 
     electric_vehicles = df.copy()
     electric_vehicles = electric_vehicles.dropna(subset=['model'])
-    electric_vehicles = electric_vehicles.drop(columns=['number_of_cells', 'source_url', 'battery_type'])
-    electric_vehicles.loc[electric_vehicles['fast_charging_power_kw_dc'].isna(), 'fast_charging_power_kw_dc'] = 80
-    electric_vehicles.loc[electric_vehicles['torque_nm'].isna(), 'torque_nm'] = 0
-    electric_vehicles.loc[electric_vehicles['fast_charge_port'].isna(), 'fast_charge_port'] = 'CCS'
+    electric_vehicles = electric_vehicles.drop(
+        columns=['number_of_cells', 'source_url', 'battery_type'])
+    electric_vehicles.loc[electric_vehicles['fast_charging_power_kw_dc'].isna(
+    ), 'fast_charging_power_kw_dc'] = 80
+    electric_vehicles.loc[electric_vehicles['torque_nm'].isna(),
+                          'torque_nm'] = 0
+    electric_vehicles.loc[electric_vehicles['fast_charge_port'].isna(
+    ), 'fast_charge_port'] = 'CCS'
     brand_means = electric_vehicles.groupby('brand').agg({
         'towing_capacity_kg': 'mean'
     })
@@ -71,14 +78,17 @@ def fill_na_discrepancy(df):
     electric_vehicles['towing_capacity_kg'] = electric_vehicles['towing_capacity_kg'].fillna(
         electric_vehicles['brand'].map(brand_means_dict)
     )
-    mask_ford_null = (electric_vehicles['brand'] == 'Ford') & (electric_vehicles['cargo_volume_l'].isnull())
+    mask_ford_null = (electric_vehicles['brand'] == 'Ford') & (
+        electric_vehicles['cargo_volume_l'].isnull())
     electric_vehicles.loc[mask_ford_null, 'cargo_volume_l'] = 571
-    mask = electric_vehicles['cargo_volume_l'].str.contains(r'(?i)Banana Boxes', na=False)
+    mask = electric_vehicles['cargo_volume_l'].str.contains(
+        r'(?i)Banana Boxes', na=False)
     electric_vehicles.loc[mask, 'cargo_volume_l'] = electric_vehicles.loc[mask, 'cargo_volume_l'].str.replace(
         r'(?i)(\d+)\s*Banana Boxes', replace_banana, regex=True
     )
 
     return electric_vehicles
+
 
 def save_data(df, file_path):
     """
@@ -91,6 +101,7 @@ def save_data(df, file_path):
     df.to_csv(file_path)
     print(f"Data saved to {file_path}")
 
+
 def main():
     print("Data preprocessing module loaded successfully!")
     electric_vehicles = load_data(data_file)
@@ -99,11 +110,16 @@ def main():
 
     X = electric_vehicles.drop('model', axis=1)
     y = electric_vehicles['model']
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42)
 
     training_data = pd.concat([X_train, y_train], axis=1)
     test_data = pd.concat([X_test, y_test], axis=1)
-    save_data(training_data, os.path.join(silver_dir, 'electric_vehicles_training_data.csv'))
-    save_data(test_data, os.path.join(silver_dir, 'electric_vehicles_test_data.csv'))
+    save_data(training_data, os.path.join(
+        silver_dir, 'electric_vehicles_training_data.csv'))
+    save_data(test_data, os.path.join(
+        silver_dir, 'electric_vehicles_test_data.csv'))
+
+
 if __name__ == "__main__":
     main()
