@@ -37,9 +37,9 @@ uv add pandas numpy
 uv add ipykernel
 ```
 
-## Pre-commit Hooks
+## 💍 Pre-commit Hooks
 To ensure code quality and consistency, we use pre-commit hooks. Follow these steps to set them up:
-### 1. Install pre-commit
+### 👰🏻‍♀️ Install pre-commit
 ```bash
 uv add pre-commit
 pre-commit install
