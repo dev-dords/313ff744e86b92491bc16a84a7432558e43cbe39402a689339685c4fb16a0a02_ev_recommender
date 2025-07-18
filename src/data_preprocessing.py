@@ -9,6 +9,7 @@ src_dir = os.getcwd()
 data_dir = os.path.join(src_dir, 'data')
 bronze_dir = os.path.join(data_dir, 'bronze')
 silver_dir = os.path.join(data_dir, 'silver')
+gold_dir = os.path.join(data_dir, 'gold')
 data_file = os.path.join(bronze_dir, 'electric_vehicles_spec_2025.csv.csv')
 
 
@@ -100,7 +101,16 @@ def save_data(df, file_path):
     df.to_csv(file_path)
 
 
+def create_directories():
+    """
+    Create necessary directories if they do not exist.
+    """
+    os.makedirs(silver_dir, exist_ok=True)
+    os.makedirs(gold_dir, exist_ok=True)
+
+
 def preprocess_data():
+    create_directories()
     electric_vehicles = load_data(data_file)
     check_missing_values(electric_vehicles)
     electric_vehicles = fill_na_discrepancy(electric_vehicles)
