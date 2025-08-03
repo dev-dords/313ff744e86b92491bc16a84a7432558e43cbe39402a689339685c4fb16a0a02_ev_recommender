@@ -1,6 +1,7 @@
 # ⚡ Electric Vehicle Recommender System
 
 ## 📁 Folder Structure
+```
 ├── data
 │ ├── 🥉 bronze # Contains raw, unprocessed data.
 │ ├── 🥈 silver # Contains cleaned and transformed data.
@@ -24,7 +25,7 @@
 ├── pyproject.toml
 ├── readme.md
 ---
-
+```
 ## ⚙️ Setup Instructions
 
 ### 🐍 Setting Up the Python Environment using UV
