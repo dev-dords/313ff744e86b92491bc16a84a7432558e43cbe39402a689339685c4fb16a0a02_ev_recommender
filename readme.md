@@ -103,3 +103,17 @@ better to run the container in docker desktop since it shows the logs in real ti
 
 
 Chat GPT was consulted on how to setup Docker and Docker Compose for the project, including the necessary commands to build and run the Docker container. Used it to fast track the setup process while going through official documentation.
+
+
+## Drift Justification
+
+Data Drift simulates real world tendencies wherein there are irregularities in logging data or shifts in business strategies. For categorical columns, values were shifted randomly. For numerical columns, a Gaussian noise was added based on the standard deviation of the training set. This approach should help in creating a more robust model that can generalize better and could handle data drift through time.
+
+Followed Assignment Instructions for MLFlow Docker, to run
+```
+docker-compose up -d
+
+curl http://localhost:5000
+```
+
+Had to downgrade and use postgres:13-alpine, i opted downgrading since im currently using a work laptop and i do not want to mess up the database for work

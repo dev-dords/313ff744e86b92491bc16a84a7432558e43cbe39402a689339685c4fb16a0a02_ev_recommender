@@ -1,4 +1,5 @@
 import os
+import random
 import re
 
 import numpy as np
@@ -86,6 +87,9 @@ def fill_na_discrepancy(df):
     electric_vehicles.loc[mask, 'cargo_volume_l'] = electric_vehicles.loc[mask, 'cargo_volume_l'].str.replace(
         r'(?i)(\d+)\s*Banana Boxes', replace_banana, regex=True
     )
+    electric_vehicles['cargo_volume_l'] = pd.to_numeric(
+        electric_vehicles['cargo_volume_l'], errors='coerce'
+    )
     print("\t\tNaN and discrepancies fixed successfully!\n")
     return electric_vehicles
 
@@ -109,6 +113,36 @@ def create_directories():
     os.makedirs(gold_dir, exist_ok=True)
 
 
+def generate_drift(df: pd.DataFrame, numerical_columns, categorical_columns, train_stds):
+    drifted_df = df.copy()
+
+    for col in numerical_columns:
+        std = train_stds.get(col, 0)
+        if std == 0:
+            continue
+        noise = np.random.normal(0, 0.1 * std, size=drifted_df[col].shape)
+        drifted_df[col] += noise
+
+    for col in categorical_columns:
+        unique_categories = drifted_df[col].dropna().unique()
+        n_rows = len(drifted_df)
+        frac = np.random.uniform(0.10, 0.15)
+        n_to_flip = int(frac * n_rows)
+
+        indices_to_flip = np.random.choice(
+            drifted_df.index, size=n_to_flip, replace=False)
+
+        for idx in indices_to_flip:
+            current_val = drifted_df.at[idx, col]
+            other_categories = [
+                cat for cat in unique_categories if cat != current_val]
+            if other_categories:
+                new_val = random.choice(other_categories)
+                drifted_df.at[idx, col] = new_val
+
+    return drifted_df
+
+
 def preprocess_data():
     create_directories()
     electric_vehicles = load_data(data_file)
@@ -120,8 +154,18 @@ def preprocess_data():
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42)
 
-    training_data = pd.concat([X_train, y_train], axis=1)
-    test_data = pd.concat([X_test, y_test], axis=1)
+    categorical_columns = ['brand', 'drivetrain',
+                           'fast_charge_port', 'segment', 'car_body_type']
+    numerical_columns = list(electric_vehicles.columns.difference(
+        categorical_columns + ['model']))
+    train_feature_stds = X_train[numerical_columns].std()
+    X_train_drifted = generate_drift(
+        X_train, numerical_columns, categorical_columns, train_feature_stds)
+    X_test_drifted = generate_drift(
+        X_test, numerical_columns, categorical_columns, train_feature_stds)
+
+    training_data = pd.concat([X_train_drifted, y_train], axis=1)
+    test_data = pd.concat([X_test_drifted, y_test], axis=1)
     save_data(training_data, os.path.join(
         silver_dir, 'electric_vehicles_training_data.csv'))
     save_data(test_data, os.path.join(

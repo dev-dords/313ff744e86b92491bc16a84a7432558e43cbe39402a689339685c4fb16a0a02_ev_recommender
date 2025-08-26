@@ -2,6 +2,7 @@ import os
 
 import joblib
 import pandas as pd
+from sklearn.metrics import silhouette_score
 
 src_dir = os.getcwd()
 data_dir = os.path.join(src_dir, 'data')
@@ -16,24 +17,27 @@ def evaluate():
         gold_dir, 'electric_vehicles_test_processed.csv'))
 
     X_test = data.drop(columns=['model'], errors='ignore')
-    y_test = data['model']
+    labels = knn.predict(X_test)
 
-    distances, indices = knn.kneighbors(X_test, n_neighbors=5)
+    # Compute metrics
+    inertia = knn.inertia_ if hasattr(knn, 'inertia_') else None
+    silhouette = silhouette_score(X_test, labels)
 
     report_path = os.path.join(src_dir, 'reports', 'metrics.txt')
     os.makedirs(os.path.dirname(report_path), exist_ok=True)
     with open(report_path, 'w') as f:
-        for i in range(5):
-            f.write(f"\nQuery Vehicle: {y_test.iloc[i]}\n")
-            f.write("Top 5 Similar Vehicles:\n")
-            for rank, idx in enumerate(indices[i]):
-                sim_model = y_test.iloc[idx]
-                sim_dist = distances[i][rank]
-                f.write(
-                    f"  {rank + 1}. {sim_model} (distance: {sim_dist:.4f})\n")
+        f.write("Clustering Evaluation Metrics\n")
+        f.write("============================\n")
+        if inertia is not None:
+            f.write(f"Inertia: {inertia:.4f}\n")
+        else:
+            f.write("Inertia: N/A (model has no inertia_ attribute)\n")
+        f.write(f"Silhouette Score: {silhouette:.4f}\n")
+
+    return {"silhouette_score": silhouette}, "clustering"
 
 
 if __name__ == "__main__":
     print("Starting evaluation...")
-    evaluate()
-    print("\nRecommendation generation completed.")
+    metrics, task_type = evaluate()
+    print(f"Silhouette Score: {metrics['silhouette_score']:.4f}")
