@@ -13,9 +13,8 @@ COPY --chown=airflow:0 pyproject.toml uv.lock* ./
 
 # Compile & install dependencies
 RUN uv pip compile pyproject.toml -o requirements.txt && \
-    uv pip install -r requirements.txt && \
-    rm requirements.txt
+    uv pip install -r requirements.txt
 
-# Copy project source and data
-COPY --chown=airflow:0 src/ ./src/
-COPY --chown=airflow:0 data/bronze/ ./data/bronze/
+# COPY --chown=airflow:0 src/ ./src/
+# COPY --chown=airflow:0 data/ ./data/
+# COPY --chown=airflow:0 deploy/airflow/ ./deploy/airflow/

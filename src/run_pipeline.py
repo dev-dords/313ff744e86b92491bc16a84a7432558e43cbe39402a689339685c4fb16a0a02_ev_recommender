@@ -9,7 +9,7 @@ def main():
     """
     Main function to run the data preprocessing and feature engineering pipelines.
     """
-    mlflow.set_tracking_uri("http://localhost:5000")
+    mlflow.set_tracking_uri("http://mlflow:5000")
     print("Starting the end-to-end pipeline...")
     print("Step 1: Data Preprocessing")
     preprocess_data()

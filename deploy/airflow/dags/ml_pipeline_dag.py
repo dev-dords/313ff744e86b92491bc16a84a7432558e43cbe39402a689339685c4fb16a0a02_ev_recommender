@@ -3,10 +3,10 @@ from datetime import datetime
 from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
 
-from src.data_preprocessing import preprocess_data
-from src.evaluation import evaluate
-from src.feature_engineering import feature_engineer
-from src.model_training import train_model
+from data_preprocessing import preprocess_data
+from evaluation import evaluate
+from feature_engineering import feature_engineer
+from model_training import train_model
 
 
 def create_dag():

@@ -1,37 +1,34 @@
-import os
-
 import joblib
 import pandas as pd
 from sklearn.metrics import silhouette_score
 
-src_dir = os.getcwd()
-data_dir = os.path.join(src_dir, 'data')
-gold_dir = os.path.join(data_dir, 'gold')
-
 
 def evaluate():
-    model_path = os.path.join(src_dir, 'models', 'model.pkl')
-    knn = joblib.load(model_path)
+    # --- Load model ---
+    model_path = "/app/models/model.pkl"
+    kmeans = joblib.load(model_path)
 
-    data = pd.read_csv(os.path.join(
-        gold_dir, 'electric_vehicles_test_processed.csv'))
+    # --- Load test data ---
+    test_file = "/app/data/gold/electric_vehicles_test_processed.csv"
+    data = pd.read_csv(test_file)
 
-    X_test = data.drop(columns=['model'], errors='ignore')
-    labels = knn.predict(X_test)
+    # drop label column if it exists
+    X_test = data.drop(columns=["model"], errors="ignore")
 
-    # Compute metrics
-    inertia = knn.inertia_ if hasattr(knn, 'inertia_') else None
-    silhouette = silhouette_score(X_test, labels)
+    # --- Predict cluster labels ---
+    labels = kmeans.predict(X_test)
 
-    report_path = os.path.join(src_dir, 'reports', 'metrics.txt')
-    os.makedirs(os.path.dirname(report_path), exist_ok=True)
-    with open(report_path, 'w') as f:
+    # --- Compute metrics ---
+    inertia = getattr(kmeans, "inertia_", None)   # available in KMeans
+    silhouette = silhouette_score(X_test, labels)  # requires >1 cluster
+
+    # --- Write report ---
+    report_path = "/app/reports/metrics.txt"
+    with open(report_path, "w") as f:
         f.write("Clustering Evaluation Metrics\n")
         f.write("============================\n")
-        if inertia is not None:
-            f.write(f"Inertia: {inertia:.4f}\n")
-        else:
-            f.write("Inertia: N/A (model has no inertia_ attribute)\n")
+        f.write(
+            f"Inertia: {inertia:.4f}\n" if inertia is not None else "Inertia: N/A\n")
         f.write(f"Silhouette Score: {silhouette:.4f}\n")
 
     return {"silhouette_score": silhouette}, "clustering"
