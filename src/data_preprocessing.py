@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
+from drift_detection import detect_drift
+
 BASE_DIR = "/app"
 DATA_DIR = f"{BASE_DIR}/data"
 BRONZE_DIR = f"{DATA_DIR}/bronze"
@@ -144,6 +146,7 @@ def preprocess_data():
         categorical_columns + ['model']))
     train_feature_stds = X_train[numerical_columns].std()
 
+    # Comment these 2 lines and replace the concat with X_train X_test to generate non_drifted data
     X_train_drifted = generate_drift(
         X_train, numerical_columns, categorical_columns, train_feature_stds)
     X_test_drifted = generate_drift(
@@ -152,6 +155,7 @@ def preprocess_data():
     training_data = pd.concat([X_train_drifted, y_train], axis=1)
     test_data = pd.concat([X_test_drifted, y_test], axis=1)
 
+    # Replace above and below to match if drifted
     save_data(training_data,
               f"{SILVER_DIR}/electric_vehicles_training_data.csv")
     save_data(test_data, f"{SILVER_DIR}/electric_vehicles_test_data.csv")

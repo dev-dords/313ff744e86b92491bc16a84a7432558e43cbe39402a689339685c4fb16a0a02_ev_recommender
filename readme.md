@@ -110,10 +110,20 @@ Chat GPT was consulted on how to setup Docker and Docker Compose for the project
 Data Drift simulates real world tendencies wherein there are irregularities in logging data or shifts in business strategies. For categorical columns, values were shifted randomly. For numerical columns, a Gaussian noise was added based on the standard deviation of the training set. This approach should help in creating a more robust model that can generalize better and could handle data drift through time.
 
 Followed Assignment Instructions for MLFlow Docker, to run
+
 ```
 docker-compose up -d
-
-curl http://localhost:5000
 ```
 
 Had to downgrade and use postgres:13-alpine, i opted downgrading since im currently using a work laptop and i do not want to mess up the database for work
+
+### Test standalone pipeline
+```
+python src/run_pipeline.py
+# Test Airflow DAG
+airflow dags test ml_pipeline_dag 2025-08-02
+# Verify MLFlow UI
+curl http://localhost:5000
+```
+
+Really having difficulties with drift detection. Checked the documentation and tried as_dict() .json() json.dumps() but still not getting the expected output.

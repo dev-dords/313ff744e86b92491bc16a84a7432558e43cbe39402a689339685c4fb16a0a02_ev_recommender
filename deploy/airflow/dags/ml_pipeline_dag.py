@@ -4,6 +4,7 @@ from airflow import DAG
 from airflow.providers.standard.operators.python import PythonOperator
 
 from data_preprocessing import preprocess_data
+from drift_detection import init_detect_drift
 from evaluation import evaluate
 from feature_engineering import feature_engineer
 from model_training import train_model
@@ -38,7 +39,11 @@ def create_dag():
             python_callable=evaluate,
         )
 
-        preprocess_task >> feature_engineering_task >> train_model_task >> evaluate_task
+        drift_detection_task = PythonOperator(
+            task_id="drift_detection",
+            python_callable=init_detect_drift,
+        )
+        preprocess_task >> feature_engineering_task >> train_model_task >> evaluate_task >> drift_detection_task
 
         return dag
 

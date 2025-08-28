@@ -19,8 +19,8 @@ def evaluate():
     labels = kmeans.predict(X_test)
 
     # --- Compute metrics ---
-    inertia = getattr(kmeans, "inertia_", None)   # available in KMeans
-    silhouette = silhouette_score(X_test, labels)  # requires >1 cluster
+    inertia = getattr(kmeans, "inertia_", None)
+    silhouette = silhouette_score(X_test, labels)
 
     # --- Write report ---
     report_path = "/app/reports/metrics.txt"
